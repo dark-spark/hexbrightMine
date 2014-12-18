@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <TimerOne.h>
 /*
   Hexbright demo firmware: Fades
  Andrew Magill  9/2012
@@ -42,6 +43,8 @@ void setup() {
   mode = MODE_OFF;
   btnDown = digitalRead(DPIN_RLED_SW);
   btnTime = millis();
+  
+  Timer1.initialize(1000000);
 }
 
 void loop()
@@ -64,18 +67,16 @@ void loop()
     break;
 
   case MODE_FADE:
-    if (time-lastTime > 5) {
+    if (time-lastTime > 1) {
       lastTime = time;
-      if (fadeDir>0 && bright==255) fadeDir = -1;
+      if (fadeDir>0 && bright==25500) fadeDir = -1;
       if (fadeDir<0 && bright==0  ) fadeDir =  1;
       bright += fadeDir;
 
-      if (time-lastTime_blink < bright) break;
-      lastTime_blink = time;
+      if (m_time-lastTime_blink < bright) break;
+      lastTime_blink = m_time;
       bblink = !bblink;
-      digitalWrite(DPIN_DRV_EN, HIGH);
-      delayMicroseconds(100);
-      digitalWrite(DPIN_DRV_EN, LOW);
+      blinkLed();
       break;
     }
     if (!btnDown && !newBtnDown && time-btnTime>50)
@@ -91,12 +92,11 @@ void loop()
       pinMode(DPIN_PWR,      OUTPUT);
       digitalWrite(DPIN_PWR, LOW);
     }    
-    if (time-lastTime_blink < bright) break;
-    lastTime_blink = time;
+    if (m_time-lastTime_blink < bright) break;
+    
+    lastTime_blink = m_time;
     bblink = !bblink;
-    digitalWrite(DPIN_DRV_EN, HIGH);
-    delayMicroseconds(100);
-    digitalWrite(DPIN_DRV_EN, LOW);
+    blinkLed();
     break;
     break;    
   }
@@ -109,3 +109,10 @@ void loop()
   }
 }
 
+void blinkLed() {
+  
+    digitalWrite(DPIN_DRV_EN, HIGH);
+    delayMicroseconds(100);
+    digitalWrite(DPIN_DRV_EN, LOW);
+    
+}
