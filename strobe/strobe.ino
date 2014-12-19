@@ -69,8 +69,8 @@ void loop()
   case MODE_FADE:
     if (time-lastTime > 1) {
       lastTime = time;
-      if (fadeDir>0 && bright==25500) fadeDir = -1;
-      if (fadeDir<0 && bright==0  ) fadeDir =  1;
+      if (fadeDir>0 && bright==25500) fadeDir = -10;
+      if (fadeDir<0 && bright==0  ) fadeDir =  10;
       bright += fadeDir;
 
       if (m_time-lastTime_blink < bright) break;
