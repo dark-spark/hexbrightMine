@@ -14,7 +14,9 @@
 byte mode;
 boolean btnDown;
 unsigned long lastTime, btnTime, lastTime_blink;
-int bright, fadeDir; 
+unsigned long bright = 30000;
+int fadeDir;
+int flash;
 byte bblink;
 
 
@@ -35,7 +37,9 @@ void setup() {
   btnDown = digitalRead(DPIN_RLED_SW);
   btnTime = millis();
   
-  Timer1.initialize(1000000);
+  Timer1.initialize(100000);
+  Timer1.attachInterrupt(blinkLed);
+  Timer1.stop();
 }
 
 void loop()
@@ -51,27 +55,26 @@ void loop()
     {
       mode = MODE_FADE;
       bright = 0;
-      fadeDir = 1;
+      fadeDir = 100;
       pinMode(DPIN_PWR, OUTPUT);
       digitalWrite(DPIN_PWR, HIGH);
+      Timer1.start();
     }
     break;
 
   case MODE_FADE:
+    Timer1.stop();
     if (time-lastTime > 5) {
       lastTime = time;
-      if (fadeDir>0 && bright==255) fadeDir = -1;
-      if (fadeDir<0 && bright==0  ) fadeDir =  1;
+      if (fadeDir>0 && bright==300000) fadeDir = -100;
+      if (fadeDir<0 && bright==30000) fadeDir =  100;
       bright += fadeDir;
-
-      if (time-lastTime_blink < bright) break;
-      lastTime_blink = time;
-      bblink = !bblink;
-      blinkLed();
-      break;
+//      Timer1.setPeriod(bright);
+      flash = bright / 30;
     }
     if (!btnDown && !newBtnDown && time-btnTime>50)
       mode = MODE_ON;
+      Timer1.start();
     break;
 
   case MODE_ON:
@@ -80,16 +83,11 @@ void loop()
     if (btnDown && !newBtnDown) {
       mode = MODE_OFF;
       digitalWrite(DPIN_DRV_EN, LOW);
-      pinMode(DPIN_PWR,      OUTPUT);
+      pinMode(DPIN_PWR, OUTPUT);
       digitalWrite(DPIN_PWR, LOW);
-    }    
-    if (time-lastTime_blink < bright) break;
-    
-    lastTime_blink = time;
-    bblink = !bblink;
-    blinkLed();
-    break
-    break;    
+      Timer1.stop();
+    }
+    break;
   }
 
   if (newBtnDown != btnDown)
@@ -101,9 +99,7 @@ void loop()
 }
 
 void blinkLed() {
-  
     digitalWrite(DPIN_DRV_EN, HIGH);
-    delayMicroseconds(1000);
+    delayMicroseconds(3000);
     digitalWrite(DPIN_DRV_EN, LOW);
-    
 }
